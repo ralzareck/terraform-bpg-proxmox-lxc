@@ -17,6 +17,6 @@
 # =============================================================================
 
 output "module" {
-  description = "Module"
+  description = "Module Outputs."
   value       = module.pve_lxc
 }
