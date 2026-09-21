@@ -18,7 +18,7 @@
 
 # Minimum configuration required for successful clone of a Proxmox template.
 
-module "pve_vm" {
+module "pve_lxc" {
   source = "../.."
 
   ct_type  = "template"
