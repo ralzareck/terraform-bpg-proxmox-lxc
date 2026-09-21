@@ -68,4 +68,19 @@ Here are the input variables of the module:
 | <a name="input_ct_fw_group"></a> [ct\_fw\_group](#input\_ct\_fw\_group) | Firewall Security Groups of the container. | <pre>map(object({<br/>    enabled = optional(bool, true)<br/>    iface   = optional(string)<br/>    comment = optional(string)<br/>  }))</pre> | `null` | **no** |
 | <a name="input_ct_ssh_privkey"></a> [ct\_ssh\_privkey](#input\_ct\_ssh\_privkey) | File containing ssh private key to be used for container bootstrap. | `string` | `null` | **no** |
 | <a name="input_ct_bootstrap"></a> [ct\_bootstrap](#input\_ct\_bootstrap) | List of paths to script files to be executed after container creation. Scripts will be executed in the order provided. | <pre>map(object({<br/>    script\_path = optional(string)<br/>    arguments   = optional(string)<br/>  }))</pre> | `{}` | **no** |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| <a name="output_pve_node"></a> [pve\_node](#output\_pve\_node) | Name of the Proxmox Node |
+| <a name="output_pve_id"></a> [pve\_id](#output\_pve\_id) | Proxmox ID of the instance |
+| <a name="output_pve_pool"></a> [pve\_pool](#output\_pve\_pool) | Proxmox Pool of the instance |
+| <a name="output_pve_type"></a> [pve\_type](#output\_pve\_type) | Proxmox type of virtualization |
+| <a name="output_name"></a> [name](#output\_name) | Name of the instance |
+| <a name="output_cpu"></a> [cpu](#output\_cpu) | Number of CPU of the instance |
+| <a name="output_mem"></a> [mem](#output\_mem) | Memory size of the instance |
+| <a name="output_disk"></a> [disk](#output\_disk) | Disk information of the instance |
+| <a name="output_iface"></a> [iface](#output\_iface) | List of Iface of the instance |
+| <a name="output_ip"></a> [ip](#output\_ip) | Couple Iface / IP of the instance |
 <!-- END_TF_DOCS -->
