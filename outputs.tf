@@ -17,42 +17,42 @@
 # =============================================================================
 
 output "pve_node" {
-  description = "Name of the Proxmox Node"
+  description = "Name of the Proxmox Node."
   value       = resource.proxmox_virtual_environment_container.pve_ct.node_name
 }
 
 output "pve_id" {
-  description = "Proxmox ID of the instance"
+  description = "Proxmox ID of the instance."
   value       = resource.proxmox_virtual_environment_container.pve_ct.vm_id
 }
 
 output "pve_pool" {
-  description = "Proxmox Pool of the instance"
+  description = "Proxmox Pool of the instance."
   value       = resource.proxmox_virtual_environment_container.pve_ct.pool_id
 }
 
 output "pve_type" {
-  description = "Proxmox type of virtualization"
+  description = "Proxmox type of virtualization."
   value       = "lxc"
 }
 
 output "name" {
-  description = "Name of the instance"
+  description = "Name of the instance."
   value       = resource.proxmox_virtual_environment_container.pve_ct.initialization[0].hostname
 }
 
 output "cpu" {
-  description = "Number of CPU of the instance"
+  description = "Number of CPU of the instance."
   value       = resource.proxmox_virtual_environment_container.pve_ct.cpu[0].cores
 }
 
 output "mem" {
-  description = "Memory size of the instance"
+  description = "Memory size of the instance (in MB)."
   value       = resource.proxmox_virtual_environment_container.pve_ct.memory[0].dedicated
 }
 
 output "disk" {
-  description = "Disk information of the instance"
+  description = "Disk information of the instance. Contains `datastore_id` and `size` of the disk."
   value = [
     for disk in proxmox_virtual_environment_container.pve_ct.disk :
     {
@@ -63,7 +63,7 @@ output "disk" {
 }
 
 output "iface" {
-  description = "List of Iface of the instance"
+  description = "List of iface of the instance (excluding the `lo` iface)."
   value = [
     for iface in proxmox_virtual_environment_container.pve_ct.network_interface :
     iface.name
@@ -71,9 +71,9 @@ output "iface" {
 }
 
 output "ip" {
-  description = "Couple Iface / IP of the instance"
+  description = "Couple iface => List of IP of the instance."
   value = {
     for idx in range(length(proxmox_virtual_environment_container.pve_ct.network_interface)) :
-    proxmox_virtual_environment_container.pve_ct.network_interface[idx].name => split("/", proxmox_virtual_environment_container.pve_ct.initialization[0].ip_config[idx].ipv4[0].address)[0]
+    proxmox_virtual_environment_container.pve_ct.network_interface[idx].name => split("/", proxmox_virtual_environment_container.pve_ct.initialization[0].ip_config[idx].ipv4[0].address)
   }
 }

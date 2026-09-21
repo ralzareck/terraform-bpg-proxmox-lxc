@@ -71,16 +71,18 @@ Here are the input variables of the module:
 
 ## Outputs
 
+Here are the outputs of the module:
+
 | Name | Description |
 |------|-------------|
-| <a name="output_pve_node"></a> [pve\_node](#output\_pve\_node) | Name of the Proxmox Node |
-| <a name="output_pve_id"></a> [pve\_id](#output\_pve\_id) | Proxmox ID of the instance |
-| <a name="output_pve_pool"></a> [pve\_pool](#output\_pve\_pool) | Proxmox Pool of the instance |
-| <a name="output_pve_type"></a> [pve\_type](#output\_pve\_type) | Proxmox type of virtualization |
-| <a name="output_name"></a> [name](#output\_name) | Name of the instance |
-| <a name="output_cpu"></a> [cpu](#output\_cpu) | Number of CPU of the instance |
-| <a name="output_mem"></a> [mem](#output\_mem) | Memory size of the instance |
-| <a name="output_disk"></a> [disk](#output\_disk) | Disk information of the instance |
-| <a name="output_iface"></a> [iface](#output\_iface) | List of Iface of the instance |
-| <a name="output_ip"></a> [ip](#output\_ip) | Couple Iface / IP of the instance |
+| <a name="output_pve_node"></a> [pve\_node](#output\_pve\_node) | Name of the Proxmox Node. |
+| <a name="output_pve_id"></a> [pve\_id](#output\_pve\_id) | Proxmox ID of the instance. |
+| <a name="output_pve_pool"></a> [pve\_pool](#output\_pve\_pool) | Proxmox Pool of the instance. |
+| <a name="output_pve_type"></a> [pve\_type](#output\_pve\_type) | Proxmox type of virtualization. |
+| <a name="output_name"></a> [name](#output\_name) | Name of the instance. |
+| <a name="output_cpu"></a> [cpu](#output\_cpu) | Number of CPU of the instance. |
+| <a name="output_mem"></a> [mem](#output\_mem) | Memory size of the instance (in MB). |
+| <a name="output_disk"></a> [disk](#output\_disk) | Disk information of the instance. Contains `datastore_id` and `size` of the disk. |
+| <a name="output_iface"></a> [iface](#output\_iface) | List of iface of the instance (excluding the `lo` iface). |
+| <a name="output_ip"></a> [ip](#output\_ip) | Couple iface => List of IP of the instance. |
 <!-- END_TF_DOCS -->
