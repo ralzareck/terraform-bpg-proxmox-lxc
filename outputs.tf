@@ -32,7 +32,7 @@ output "pve_pool" {
 }
 
 output "pve_type" {
-  description = "Proxmox type of viirtualization"
+  description = "Proxmox type of virtualization"
   value       = "lxc"
 }
 
@@ -63,7 +63,7 @@ output "disk" {
 }
 
 output "iface" {
-  description = "Iface of the instance"
+  description = "List of Iface of the instance"
   value = [
     for iface in proxmox_virtual_environment_container.pve_ct.network_interface :
     iface.name
@@ -71,7 +71,7 @@ output "iface" {
 }
 
 output "ip" {
-  description = "IP of the instance"
+  description = "Couple Iface / IP of the instance"
   value = {
     for idx in range(length(proxmox_virtual_environment_container.pve_ct.network_interface)) :
     proxmox_virtual_environment_container.pve_ct.network_interface[idx].name => split("/", proxmox_virtual_environment_container.pve_ct.initialization[0].ip_config[idx].ipv4[0].address)[0]
