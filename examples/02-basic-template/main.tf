@@ -29,7 +29,7 @@ module "pve_lxc" {
     file_name    = "debian-12-standard_12.7-1_amd64.tar.zst"
   }
 
-  ct_name     = "example-basic-template"
+  ct_name = "example-basic-template"
 
   ct_disk = {
     datastore_id = "data"
