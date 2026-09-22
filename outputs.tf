@@ -70,10 +70,32 @@ output "iface" {
   ]
 }
 
-output "ip" {
-  description = "Couple iface => List of IP of the instance."
+output "mac_addresses" {
+  description = "Couple iface => List of MAC addresses of the instance."
+  value = {
+    for iface in proxmox_virtual_environment_container.pve_ct.network_interface :
+    iface.name => iface.mac_address
+  }
+}
+
+output "ipv4_addresses" {
+  description = "Couple iface => List of IPv4 of the instance"
   value = {
     for idx in range(length(proxmox_virtual_environment_container.pve_ct.network_interface)) :
-    proxmox_virtual_environment_container.pve_ct.network_interface[idx].name => split("/", proxmox_virtual_environment_container.pve_ct.initialization[0].ip_config[idx].ipv4[0].address)
+    proxmox_virtual_environment_container.pve_ct.network_interface[idx].name => [
+      for ip in proxmox_virtual_environment_container.pve_ct.initialization[0].ip_config[idx].ipv4 :
+      split("/", ip.address)[0]
+    ]
+  }
+}
+
+output "ipv6_addresses" {
+  description = "Couple iface => List of IPv6 addresses of the instance."
+  value = {
+    for idx in range(length(proxmox_virtual_environment_container.pve_ct.network_interface)) :
+    proxmox_virtual_environment_container.pve_ct.network_interface[idx].name => [
+      for ip in proxmox_virtual_environment_container.pve_ct.initialization[0].ip_config[idx].ipv6 :
+      split("/", ip.address)[0]
+    ]
   }
 }
