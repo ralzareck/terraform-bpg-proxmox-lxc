@@ -75,8 +75,8 @@ output "ip" {
   value = {
     for idx in range(length(proxmox_virtual_environment_container.pve_ct.network_interface)) :
     proxmox_virtual_environment_container.pve_ct.network_interface[idx].name => [
-      for ip in  proxmox_virtual_environment_container.pve_ct.initialization[0].ip_config[idx].ipv4 :
-        split("/", ip.address)[0]
+      for ip in proxmox_virtual_environment_container.pve_ct.initialization[0].ip_config[idx].ipv4 :
+      split("/", ip.address)[0]
     ]
   }
 }
