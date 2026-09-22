@@ -78,8 +78,8 @@ output "mac_addresses" {
   }
 }
 
-output "ip" {
-  description = "Couple iface => List of IP of the instance."
+output "ipv4_addresses" {
+  description = "Couple iface => List of IPv4 of the instance"
   value = {
     for idx in range(length(proxmox_virtual_environment_container.pve_ct.network_interface)) :
     proxmox_virtual_environment_container.pve_ct.network_interface[idx].name => [
