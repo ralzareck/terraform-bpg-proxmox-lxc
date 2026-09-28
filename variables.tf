@@ -238,24 +238,27 @@ variable "ct_init" {
 variable "ct_fw_opts" {
   type = object({
     enabled       = bool
-    dhcp          = optional(bool)
-    input_policy  = optional(string)
-    output_policy = optional(string)
-    macfilter     = optional(bool)
-    ipfilter      = optional(bool)
-    ndp           = optional(bool)
-    radv          = optional(bool)
+    dhcp          = optional(bool, true)
+    ndp           = optional(bool, false)
+    radv          = optional(bool, false)
+    macfilter     = optional(bool, true)
+    ipfilter      = optional(bool, false)
+    input_policy  = optional(string, "DENY")
+    output_policy = optional(string, "ACCEPT")
+    log_level_in  = optional(string, "info")
+    log_level_out = optional(string, "info")
   })
-  description = "Firewall settings of the container."
-  nullable    = true
-  default     = null
+  description = "Firewall settings for the VM."
+  default     = {
+    enabled = false
+  }
 }
 
 variable "ct_fw_rules" {
-  type = map(object({
+  type = list(object({
     enabled   = optional(bool, true)
-    action    = string
-    direction = string
+    action    = optional(string)
+    direction = optional(string)
     iface     = optional(string)
     proto     = optional(string)
     srcip     = optional(string)
@@ -264,9 +267,8 @@ variable "ct_fw_rules" {
     destport  = optional(string)
     comment   = optional(string)
   }))
-  description = "Firewall rules of the container."
-  nullable    = true
-  default     = null
+  description = "Firewall rules for the VM."
+  default     = [ ]
 }
 
 
@@ -276,9 +278,8 @@ variable "ct_fw_group" {
     iface   = optional(string)
     comment = optional(string)
   }))
-  description = "Firewall Security Groups of the container."
-  nullable    = true
-  default     = null
+  description = "Firewall Security Groups for the VM."
+  default     =  { }
 }
 
 # =============================================================================

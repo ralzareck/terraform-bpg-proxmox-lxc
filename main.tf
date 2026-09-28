@@ -36,7 +36,7 @@ resource "proxmox_virtual_environment_container" "pve_ct" {
   # CT Information
   description  = var.ct_description
   tags         = var.ct_tags
-  vm_id        = var.ct_id
+  ct_id        = var.ct_id
   pool_id      = var.ct_pool
   unprivileged = var.ct_unprivileged
   protection   = var.ct_protection
@@ -57,7 +57,7 @@ resource "proxmox_virtual_environment_container" "pve_ct" {
     content {
       datastore_id = var.src_clone.datastore_id
       node_name    = (var.src_clone.node_name != null) ? var.src_clone.node_name : var.pve_node
-      vm_id        = var.src_clone.tpl_id
+      ct_id        = var.src_clone.tpl_id
     }
   }
 
@@ -150,27 +150,61 @@ resource "proxmox_virtual_environment_container" "pve_ct" {
 # =============================================================================
 
 resource "proxmox_virtual_environment_firewall_options" "pve_ct_fw_opts" {
-  count = (var.ct_fw_opts != null) ? 1 : 0
-
-  node_name = proxmox_virtual_environment_container.pve_ct.node_name
-  vm_id     = proxmox_virtual_environment_container.pve_ct.vm_id
+  depends_on = [proxmox_virtual_environment_vm.pve_vm]
+  # Proxmox
+  node_name    = proxmox_virtual_environment_vm.pve_vm.node_name
+  container_id = proxmox_virtual_environment_vm.pve_vm.ct_id
 
   enabled       = var.ct_fw_opts.enabled
   dhcp          = var.ct_fw_opts.dhcp
-  input_policy  = var.ct_fw_opts.input_policy
-  output_policy = var.ct_fw_opts.output_policy
+  ndp           = var.ct_fw_opts.ndp
+  radv          = var.ct_fw_opts.radv
   macfilter     = var.ct_fw_opts.macfilter
   ipfilter      = var.ct_fw_opts.ipfilter
+  input_policy  = var.ct_fw_opts.input_policy
+  output_policy = var.ct_fw_opts.output_policy
+  log_level_in  = var.ct_fw_opts.log_level_in
+  log_level_out = var.ct_fw_opts.log_level_in
+}
+
+ressource "proxmox_virtual_environment_firewall_alias" "pve_ct_fw_alias" {
+  depends_on = [proxmox_virtual_environment_vm.pve_vm, proxmox_virtual_environment_firewall_options.pve_ctfw_opts]
+  count = proxmox_virtual_environment_firewall_options.pve_ct_fw_opts.ipfilter ? length(proxmox_virtual_environment_vm.pve_vm.network_device) : 0
+
+  # Proxmox
+  node_name    = proxmox_virtual_environment_vm.pve_vm.node_name
+  container_id = proxmox_virtual_environment_vm.pve_vm.ct_id
+
+  name    = "alias-net${count.index}"
+  comment = "net${count.index} interface alias. Managed by Terraform"
+  cidr    = split("/", proxmox_virtual_environment_container.pve_vm.initialization[0].ip_config[count.index].ipv4[0])
+}
+
+ressource "proxmox_virtual_environment_firewall_ipset" "pve_ct_fw_ipset" {
+  depends_on = [proxmox_virtual_environment_vm.pve_vm, proxmox_virtual_environment_firewall_options.pve_ct_fw_opts]
+  count = proxmox_virtual_environment_firewall_options.pve_ct_fw_opts.ipfilter ? length(proxmox_virtual_environment_vm.pve_vm.network_device) : 0
+
+  # Proxmox
+  node_name    = proxmox_virtual_environment_vm.pve_vm.node_name
+  container_id = proxmox_virtual_environment_vm.pve_vm.ct_id
+
+  name    = "ipset-net${count.index}"
+  comment = "ipfilter set. Managed by Terraform"
+
+  cidr {
+    name    = "alias-net${count.index}"
+    comment = "net${count.index} interface. Managed by Terraform"
+  }
 }
 
 resource "proxmox_virtual_environment_firewall_rules" "pve_ct_fw_rules" {
-  count = (var.ct_fw_rules != null || var.ct_fw_group != null) ? 1 : 0
-
-  node_name = proxmox_virtual_environment_container.pve_ct.node_name
-  vm_id     = proxmox_virtual_environment_container.pve_ct.vm_id
+  depends_on = [proxmox_virtual_environment_vm.pve_vm]
+  # Proxmox
+  node_name    = proxmox_virtual_environment_vm.pve_vm.node_name
+  container_id = proxmox_virtual_environment_vm.pve_vm.ct_id
 
   dynamic "rule" {
-    for_each = var.ct_fw_rules != null ? var.ct_fw_rules : {}
+    for_each = var.ct_fw_rules
     content {
       enabled = rule.value.enabled
       action  = rule.value.action
@@ -181,17 +215,17 @@ resource "proxmox_virtual_environment_firewall_rules" "pve_ct_fw_rules" {
       sport   = rule.value.srcport
       dest    = rule.value.destip
       dport   = rule.value.destport
-      comment = "${rule.value.comment == null ? "" : rule.value.comment}; Managed by Terraform"
+      comment = "${rule.value.comment == null ? "" : rule.value.comment}/. Managed by Terraform"
     }
   }
 
   dynamic "rule" {
-    for_each = var.ct_fw_group != null ? var.ct_fw_group : {}
+    for_each = var.ct_fw_security_groups
     content {
       enabled        = rule.value.enabled
       security_group = rule.key
       iface          = rule.value.iface
-      comment        = "${rule.value.comment == null ? "" : rule.value.comment}; Managed by Terraform"
+      comment        = "${rule.value.comment == null ? "" : rule.value.comment}. Managed by Terraform"
     }
   }
 }
