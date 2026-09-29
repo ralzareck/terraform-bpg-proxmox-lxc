@@ -260,7 +260,7 @@ variable "fw_opts" {
     input_policy  = "DROP"
     output_policy = "ACCEPT"
     log_level_in  = "nolog"
-    log_level_out ="nolog"
+    log_level_out = "nolog"
   }
 }
 
@@ -273,13 +273,13 @@ variable "fw_rules" {
     proto     = optional(string)
     srcip     = optional(string)
     srcport   = optional(string)
-    dstip    = optional(string)
-    dstport  = optional(string)
+    dstip     = optional(string)
+    dstport   = optional(string)
     comment   = optional(string)
     log       = optional(string)
   }))
   description = "Firewall rules for the VM."
-  default = [ ]
+  default     = []
 }
 
 variable "fw_security_groups" {
@@ -289,7 +289,7 @@ variable "fw_security_groups" {
     comment = optional(string)
   }))
   description = "Firewall Security Groups for the VM."
-  default = { }
+  default     = {}
 }
 
 # =============================================================================

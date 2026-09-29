@@ -68,7 +68,7 @@ module "pve_lxc" {
 
   ct_init = {
     dns = {
-      domain = "home.internal"
+      domain  = "home.internal"
       servers = ["8.8.8.8"]
     }
   }
