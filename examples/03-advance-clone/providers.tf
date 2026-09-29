@@ -13,35 +13,29 @@
 # limitations under the License.
 
 # =============================================================================
-# ===== Example - Basic Clone =================================================
+# ===== Provider ==============================================================
 # =============================================================================
 
-# Minimum configuration required for successful clone of a Proxmox template.
+terraform {
+  required_version = "~> 1.9"
+}
 
-module "pve_lxc" {
-  source = "../.."
-
-  ct_type  = "template"
-  pve_node = var.proxmox_node
-
-  src_file = {
-    datastore_id = "image"
-    file_name    = "debian-12-standard_12.7-1_amd64.tar.zst"
-  }
-
-  ct_name = "example-basic-template"
-
-  ct_disk = {
-    datastore_id = "data"
-    size         = 8
-  }
-
-  ct_net_ifaces = {
-    net0 = {
-      name      = "eth0"
-      bridge    = "vmbr0"
-      ipv4_addr = "10.0.0.10/24"
-      ipv4_gw   = "10.0.0.1"
+terraform {
+  required_providers {
+    proxmox = {
+      source  = "bpg/proxmox"
+      version = ">= 0.66"
     }
+  }
+}
+
+provider "proxmox" {
+  api_token = "${var.proxmox_api_token_id}=${var.proxmox_api_token_secret}"
+  endpoint  = "https://${var.proxmox_host}/api2/json"
+  insecure  = true
+  ssh {
+    agent       = false
+    private_key = file(var.proxmox_ssh_private_key)
+    username    = "root"
   }
 }

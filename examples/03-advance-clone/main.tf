@@ -29,7 +29,27 @@ module "pve_lxc" {
     file_name    = "debian-12-standard_12.7-1_amd64.tar.zst"
   }
 
-  ct_name = "example-basic-template"
+  ct_name = "example-advance-clone"
+
+  ct_start = {
+    on_deploy = true
+    on_boot   = true
+    order     = 0
+  }
+
+  ct_cpu = {
+    cores = 8
+  }
+
+  ct_mem = {
+    dedicated = 8192
+    swap      = 512
+  }
+
+  ct_console = {
+    enabled = true
+    type    = "shell"
+  }
 
   ct_disk = {
     datastore_id = "data"
@@ -42,6 +62,36 @@ module "pve_lxc" {
       bridge    = "vmbr0"
       ipv4_addr = "10.0.0.10/24"
       ipv4_gw   = "10.0.0.1"
+      vlan_id   = 50
     }
   }
+
+  ct_init = {
+    dns = {
+      domain  = "home.internal"
+      servers = ["8.8.8.8"]
+    }
+  }
+
+  fw_opts = {
+    enabled       = true
+    macfilter     = true
+    ipfilter      = true
+    input_policy  = "DROP"
+    output_policy = "ACCEPT"
+  }
+
+  fw_rules = [
+    {
+      enabled   = true
+      direction = "in"
+      action    = "ACCEPT"
+      iface     = "net0"
+      proto     = "tcp"
+      srcip     = "10.31.0.0/16"
+      dstport   = 22
+      comment   = "Allow TCP connections to authorized ports."
+      log       = "info"
+    }
+  ]
 }

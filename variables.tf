@@ -195,17 +195,18 @@ variable "ct_disk" {
 
 variable "ct_net_ifaces" {
   type = map(object({
-    name       = string
-    bridge     = string
-    enabled    = optional(bool, true)
-    firewall   = optional(bool, true)
-    mac_addr   = optional(string)
-    model      = optional(string, "virtio")
-    mtu        = optional(number, 1500)
-    rate_limit = optional(string)
-    vlan_id    = optional(number)
-    ipv4_addr  = string
-    ipv4_gw    = string
+    name         = string
+    bridge       = string
+    enabled      = optional(bool, true)
+    host_managed = optional(bool, true)
+    firewall     = optional(bool, true)
+    mac_addr     = optional(string)
+    model        = optional(string, "virtio")
+    mtu          = optional(number, 1500)
+    rate_limit   = optional(string)
+    vlan_id      = optional(number)
+    ipv4_addr    = string
+    ipv4_gw      = string
   }))
   description = "The network interfaces configuration of the container."
   default     = {}
@@ -235,50 +236,60 @@ variable "ct_init" {
 # ===== Host Firewall =========================================================
 # =============================================================================
 
-variable "ct_fw_opts" {
+variable "fw_opts" {
   type = object({
     enabled       = bool
-    dhcp          = optional(bool)
-    input_policy  = optional(string)
-    output_policy = optional(string)
-    macfilter     = optional(bool)
-    ipfilter      = optional(bool)
-    ndp           = optional(bool)
-    radv          = optional(bool)
+    dhcp          = optional(bool, true)
+    ndp           = optional(bool, false)
+    radv          = optional(bool, false)
+    macfilter     = optional(bool, true)
+    ipfilter      = optional(bool, false)
+    input_policy  = optional(string, "DROP")
+    output_policy = optional(string, "ACCEPT")
+    log_level_in  = optional(string, "nolog")
+    log_level_out = optional(string, "nolog")
   })
-  description = "Firewall settings of the container."
-  nullable    = true
-  default     = null
+  description = "Firewall settings for the VM."
+  default = {
+    enabled       = false
+    dhcp          = true
+    ndp           = false
+    radv          = false
+    macfilter     = true
+    ipfilter      = false
+    input_policy  = "DROP"
+    output_policy = "ACCEPT"
+    log_level_in  = "nolog"
+    log_level_out = "nolog"
+  }
 }
 
-variable "ct_fw_rules" {
-  type = map(object({
+variable "fw_rules" {
+  type = list(object({
     enabled   = optional(bool, true)
-    action    = string
-    direction = string
+    action    = optional(string)
+    direction = optional(string)
     iface     = optional(string)
     proto     = optional(string)
     srcip     = optional(string)
     srcport   = optional(string)
-    destip    = optional(string)
-    destport  = optional(string)
+    dstip     = optional(string)
+    dstport   = optional(string)
     comment   = optional(string)
+    log       = optional(string)
   }))
-  description = "Firewall rules of the container."
-  nullable    = true
-  default     = null
+  description = "Firewall rules for the VM."
+  default     = []
 }
 
-
-variable "ct_fw_group" {
+variable "fw_security_groups" {
   type = map(object({
     enabled = optional(bool, true)
     iface   = optional(string)
     comment = optional(string)
   }))
-  description = "Firewall Security Groups of the container."
-  nullable    = true
-  default     = null
+  description = "Firewall Security Groups for the VM."
+  default     = {}
 }
 
 # =============================================================================

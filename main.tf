@@ -103,14 +103,15 @@ resource "proxmox_virtual_environment_container" "pve_ct" {
   dynamic "network_interface" {
     for_each = var.ct_net_ifaces
     content {
-      name        = network_interface.value.name
-      bridge      = network_interface.value.bridge
-      enabled     = network_interface.value.enabled
-      firewall    = network_interface.value.firewall
-      mac_address = network_interface.value.mac_addr
-      mtu         = network_interface.value.mtu
-      rate_limit  = network_interface.value.rate_limit
-      vlan_id     = network_interface.value.vlan_id
+      name         = network_interface.value.name
+      bridge       = network_interface.value.bridge
+      enabled      = network_interface.value.enabled
+      host_managed = network_interface.value.host_managed
+      firewall     = network_interface.value.firewall
+      mac_address  = network_interface.value.mac_addr
+      mtu          = network_interface.value.mtu
+      rate_limit   = network_interface.value.rate_limit
+      vlan_id      = network_interface.value.vlan_id
     }
   }
 
@@ -149,28 +150,73 @@ resource "proxmox_virtual_environment_container" "pve_ct" {
 # = CT Firewall ===============================================================
 # =============================================================================
 
-resource "proxmox_virtual_environment_firewall_options" "pve_ct_fw_opts" {
-  count = (var.ct_fw_opts != null) ? 1 : 0
+resource "proxmox_virtual_environment_firewall_options" "pve_fw_opts" {
+  depends_on = [
+    proxmox_virtual_environment_container.pve_ct
+  ]
+  # Proxmox
+  node_name    = proxmox_virtual_environment_container.pve_ct.node_name
+  container_id = proxmox_virtual_environment_container.pve_ct.vm_id
 
-  node_name = proxmox_virtual_environment_container.pve_ct.node_name
-  vm_id     = proxmox_virtual_environment_container.pve_ct.vm_id
-
-  enabled       = var.ct_fw_opts.enabled
-  dhcp          = var.ct_fw_opts.dhcp
-  input_policy  = var.ct_fw_opts.input_policy
-  output_policy = var.ct_fw_opts.output_policy
-  macfilter     = var.ct_fw_opts.macfilter
-  ipfilter      = var.ct_fw_opts.ipfilter
+  enabled       = var.fw_opts.enabled
+  dhcp          = var.fw_opts.dhcp
+  ndp           = var.fw_opts.ndp
+  radv          = var.fw_opts.radv
+  macfilter     = var.fw_opts.macfilter
+  ipfilter      = var.fw_opts.ipfilter
+  input_policy  = var.fw_opts.input_policy
+  output_policy = var.fw_opts.output_policy
+  log_level_in  = var.fw_opts.log_level_in
+  log_level_out = var.fw_opts.log_level_in
 }
 
-resource "proxmox_virtual_environment_firewall_rules" "pve_ct_fw_rules" {
-  count = (var.ct_fw_rules != null || var.ct_fw_group != null) ? 1 : 0
+resource "proxmox_virtual_environment_firewall_alias" "pve_fw_alias" {
+  depends_on = [
+    proxmox_virtual_environment_container.pve_ct,
+    proxmox_virtual_environment_firewall_options.pve_fw_opts
+  ]
+  count = proxmox_virtual_environment_firewall_options.pve_fw_opts.ipfilter ? length(proxmox_virtual_environment_container.pve_ct.network_interface) : 0
 
-  node_name = proxmox_virtual_environment_container.pve_ct.node_name
-  vm_id     = proxmox_virtual_environment_container.pve_ct.vm_id
+  # Proxmox
+  node_name    = proxmox_virtual_environment_container.pve_ct.node_name
+  container_id = proxmox_virtual_environment_container.pve_ct.vm_id
+
+  name    = "ip-net${count.index}"
+  comment = "IP Alias for net${count.index} interface."
+  cidr    = split("/", proxmox_virtual_environment_container.pve_ct.initialization[0].ip_config[count.index].ipv4[0].address)[0]
+}
+
+resource "proxmox_virtual_environment_firewall_ipset" "pve_fw_ipset" {
+  depends_on = [
+    proxmox_virtual_environment_container.pve_ct,
+    proxmox_virtual_environment_firewall_options.pve_fw_opts,
+    proxmox_virtual_environment_firewall_alias.pve_fw_alias
+  ]
+  count = proxmox_virtual_environment_firewall_options.pve_fw_opts.ipfilter ? length(proxmox_virtual_environment_container.pve_ct.network_interface) : 0
+
+  # Proxmox
+  node_name    = proxmox_virtual_environment_container.pve_ct.node_name
+  container_id = proxmox_virtual_environment_container.pve_ct.vm_id
+
+  name    = "ipfilter-net${count.index}"
+  comment = "IPSet for net${count.index} interface."
+
+  cidr {
+    name    = proxmox_virtual_environment_firewall_alias.pve_fw_alias[count.index].id
+    comment = "CIDR for net${count.index} interface."
+  }
+}
+
+resource "proxmox_virtual_environment_firewall_rules" "pve_fw_rules" {
+  depends_on = [
+    proxmox_virtual_environment_container.pve_ct
+  ]
+  # Proxmox
+  node_name    = proxmox_virtual_environment_container.pve_ct.node_name
+  container_id = proxmox_virtual_environment_container.pve_ct.vm_id
 
   dynamic "rule" {
-    for_each = var.ct_fw_rules != null ? var.ct_fw_rules : {}
+    for_each = var.fw_rules
     content {
       enabled = rule.value.enabled
       action  = rule.value.action
@@ -179,19 +225,19 @@ resource "proxmox_virtual_environment_firewall_rules" "pve_ct_fw_rules" {
       proto   = rule.value.proto
       source  = rule.value.srcip
       sport   = rule.value.srcport
-      dest    = rule.value.destip
-      dport   = rule.value.destport
-      comment = "${rule.value.comment == null ? "" : rule.value.comment}; Managed by Terraform"
+      dest    = rule.value.dstip
+      dport   = rule.value.dstport
+      comment = "${rule.value.comment == null ? "" : rule.value.comment}/. Managed by Terraform"
     }
   }
 
   dynamic "rule" {
-    for_each = var.ct_fw_group != null ? var.ct_fw_group : {}
+    for_each = var.fw_security_groups
     content {
       enabled        = rule.value.enabled
       security_group = rule.key
       iface          = rule.value.iface
-      comment        = "${rule.value.comment == null ? "" : rule.value.comment}; Managed by Terraform"
+      comment        = "${rule.value.comment == null ? "" : rule.value.comment}. Managed by Terraform"
     }
   }
 }
@@ -201,17 +247,21 @@ resource "proxmox_virtual_environment_firewall_rules" "pve_ct_fw_rules" {
 # =============================================================================
 
 resource "time_sleep" "wait_for_ct" {
+  depends_on = [
+    proxmox_virtual_environment_container.pve_ct
+  ]
   count           = length(var.ct_bootstrap) > 0 ? 1 : 0
   create_duration = "10s"
   triggers = {
     id = proxmox_virtual_environment_container.pve_ct.id
   }
-  depends_on = [
-    proxmox_virtual_environment_container.pve_ct
-  ]
 }
 
 resource "terraform_data" "bootstrap_ct" {
+  depends_on = [
+    proxmox_virtual_environment_container.pve_ct,
+    time_sleep.wait_for_ct
+  ]
   count = length(var.ct_bootstrap)
 
   connection {
@@ -235,10 +285,6 @@ resource "terraform_data" "bootstrap_ct" {
   triggers_replace = [
     time_sleep.wait_for_ct[0].id,
     proxmox_virtual_environment_container.pve_ct.id
-  ]
-
-  depends_on = [
-    time_sleep.wait_for_ct
   ]
 
   lifecycle {
