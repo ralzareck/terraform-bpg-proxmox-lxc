@@ -40,7 +40,7 @@ module "pve_lxc" {
     net0 = {
       name      = "eth0"
       bridge    = "vmbr0"
-      ipv4_addr = "10.0.0.1/24"
+      ipv4_addr = "10.0.0.10/24"
       ipv4_gw   = "10.0.0.1"
     }
   }
