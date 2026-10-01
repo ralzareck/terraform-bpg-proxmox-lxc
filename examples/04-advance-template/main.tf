@@ -88,7 +88,7 @@ module "pve_lxc" {
       srcip   = "10.31.0.0/16"
       dstport = "22"
       comment = "Allow TCP connections to SSH port."
-      log = "info", prefix = "nftables: TABLE=IPV4 TYPE=INPUT STATE=ACCEPT MSG=TCP_LOG_ACCEPT "
+      log     = "info", prefix = "nftables: TABLE=IPV4 TYPE=INPUT STATE=ACCEPT MSG=TCP_LOG_ACCEPT "
     },
     {
       enabled = true, direction = "in", action = "ACCEPT"
