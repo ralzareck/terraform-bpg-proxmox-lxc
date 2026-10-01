@@ -227,7 +227,8 @@ resource "proxmox_virtual_environment_firewall_rules" "pve_fw_rules" {
       sport   = rule.value.srcport
       dest    = rule.value.dstip
       dport   = rule.value.dstport
-      comment = "${rule.value.comment == null ? "" : rule.value.comment}/. Managed by Terraform"
+      comment = rule.value.comment
+      log     = rule.value.log
     }
   }
 
@@ -237,7 +238,7 @@ resource "proxmox_virtual_environment_firewall_rules" "pve_fw_rules" {
       enabled        = rule.value.enabled
       security_group = rule.key
       iface          = rule.value.iface
-      comment        = "${rule.value.comment == null ? "" : rule.value.comment}. Managed by Terraform"
+      comment        = rule.value.comment
     }
   }
 }
