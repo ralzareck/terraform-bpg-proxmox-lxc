@@ -196,6 +196,7 @@ variable "ct_disk" {
 variable "ct_net_ifaces" {
   type = map(object({
     name         = string
+    description  = optional(string)
     bridge       = string
     enabled      = optional(bool, true)
     host_managed = optional(bool, true)
@@ -276,7 +277,8 @@ variable "fw_rules" {
     dstip     = optional(string)
     dstport   = optional(string)
     comment   = optional(string)
-    log       = optional(string)
+    log       = optional(string, "nolog")
+    prefix    = optional(string)
   }))
   description = "Firewall rules for the VM."
   default     = []

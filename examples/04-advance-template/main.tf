@@ -62,7 +62,6 @@ module "pve_lxc" {
       bridge    = "vmbr0"
       ipv4_addr = "10.0.0.10/24"
       ipv4_gw   = "10.0.0.1"
-      vlan_id   = 50
     }
   }
 
@@ -83,15 +82,21 @@ module "pve_lxc" {
 
   fw_rules = [
     {
-      enabled   = true
-      direction = "in"
-      action    = "ACCEPT"
-      iface     = "net0"
-      proto     = "tcp"
-      srcip     = "10.31.0.0/16"
-      dstport   = 22
-      comment   = "Allow TCP connections to authorized ports."
-      log       = "info"
+      enabled = true, direction = "in", action = "ACCEPT"
+      iface   = "net0"
+      proto   = "tcp"
+      srcip   = "10.31.0.0/16"
+      dstport = "22"
+      comment = "Allow TCP connections to SSH port."
+      log     = "info", prefix = "nftables: TABLE=IPV4 TYPE=INPUT STATE=ACCEPT MSG=TCP_LOG_ACCEPT "
+    },
+    {
+      enabled = true, direction = "in", action = "ACCEPT"
+      iface   = "net0"
+      proto   = "tcp"
+      srcip   = "10.31.0.0/16"
+      dstport = "443"
+      comment = "Allow TCP connections to HTTPS port.", log = "nolog"
     }
   ]
 }
