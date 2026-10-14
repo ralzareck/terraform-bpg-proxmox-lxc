@@ -103,7 +103,7 @@ resource "proxmox_virtual_environment_container" "pve_ct" {
   dynamic "network_interface" {
     for_each = var.ct_net_ifaces
     content {
-      name         = network_interface.value.name
+      name         = coalesce(network_interface.value.name, network_interface.key)
       bridge       = network_interface.value.bridge
       enabled      = network_interface.value.enabled
       host_managed = network_interface.value.host_managed
